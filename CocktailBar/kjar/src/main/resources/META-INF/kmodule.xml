@@ -1,5 +1,18 @@
 <kmodule xmlns="http://jboss.org/kie/6.0.0/kmodule">
-<!--    <kbase name="" packages="" eventProcessingMode="">-->
-<!--        <ksession name=""/>-->
-<!--    </kbase>-->
+    <kbase name="cocktailRecommendationKBase" packages="cocktail">
+        <ksession name="cocktailRecommendationKSession" type="stateful"/>
+    </kbase>
+
+    <kbase name="eventPlanningKBase" packages="event">
+        <ksession name="eventPlanningKSession" type="stateful"/>
+    </kbase>
+
+    <kbase name="inventoryTrackingKBase" packages="inventory">
+        <ksession name="inventoryTrackingKSession" type="stateful"/>
+    </kbase>
+
+    <kbase name="menuUpdateKBase" packages="menu">
+        <ksession name="menuUpdateKSession" type="stateful"/>
+    </kbase>
+
 </kmodule>

@@ -11,4 +11,8 @@ public class PreferableCocktailList {
     private Long referenceId;
     private Set<Cocktail> cocktails = new HashSet<>();
 
+    public void addCocktail(Cocktail cocktail) {
+        cocktails.add(cocktail);
+    }
+
 }

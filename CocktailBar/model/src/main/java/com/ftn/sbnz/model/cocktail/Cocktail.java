@@ -17,6 +17,10 @@ public class Cocktail {
     @OneToOne
     private Recipe recipe;
 
+    public double calculateStrength() {
+        return recipe.calculateStrength();
+    }
+
     @Data
     public static class CocktailDTO {
         String name;
