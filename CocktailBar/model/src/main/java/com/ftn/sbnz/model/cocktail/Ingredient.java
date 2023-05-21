@@ -24,7 +24,7 @@ public class Ingredient {
     }
 
     @Data
-    public class IngredientDTO {
+    public static class IngredientDTO {
         private String name;
         private int alcoholPercentage;
         private String flavor;
@@ -36,9 +36,25 @@ public class Ingredient {
             alcoholPercentage = ingredient.getAlcoholPercentage();
             flavor = ingredient.getFlavor().toString();
             type = ingredient.getType().toString();
-            recipeId = ingredient.getRecipeId();
+            if (ingredient.getRecipe() != null) {
+                recipeId = ingredient.getRecipeId();
+            }
+
         }
     }
+    @Data
+    public static class IngredientDisplayDTO {
+        private String name;
+        private int alcoholPercentage;
+        private String flavor;
+        private String type;
 
+        public IngredientDisplayDTO(Ingredient ingredient) {
+            name = ingredient.getName();
+            alcoholPercentage = ingredient.getAlcoholPercentage();
+            flavor = ingredient.getFlavor().toString();
+            type = ingredient.getType().toString();
+        }
 
+    }
 }

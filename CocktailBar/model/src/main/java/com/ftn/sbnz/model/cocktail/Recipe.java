@@ -31,6 +31,10 @@ public class Recipe {
         return totalAlcohol/totalLiquid;
     }
 
+    public List<Ingredient> getIngredients() {
+        return recipeIngredients.stream().map(RecipeIngredient::getIngredient).toList();
+    }
+
     @Data
     public static class RecipeDTO {
         private List<Long> recipeIngredients;
