@@ -8,10 +8,11 @@ import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.persistence.EntityNotFoundException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CocktailRecommendationService {
@@ -22,7 +23,7 @@ public class CocktailRecommendationService {
     @Autowired
     private UserService userService;
 
-    public List<Cocktail> recommendCocktail(Long userId, TastePreference tastePreference) {
+    public List<Cocktail.CocktailDisplayDTO> recommendCocktail(Long userId, TastePreference tastePreference) {
 
         KieSession kieSession = kieSessions.get("cocktail_recommendation");
         if (kieSession != null) {
@@ -44,8 +45,9 @@ public class CocktailRecommendationService {
                     .orElse(null);
 
             removeObjectsFromSession(kieSession, objects);
-
-            return new ArrayList<>(preferableCocktailList.getCocktails());
+            if (preferableCocktailList != null)
+                return preferableCocktailList.getCocktails().stream().map(Cocktail.CocktailDisplayDTO::new).collect(Collectors.toList());
+            else throw new EntityNotFoundException("There are no cocktails with given parameters.");
         } else {
             throw new RuntimeException("Session is null.");
         }

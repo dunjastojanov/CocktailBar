@@ -16,7 +16,7 @@ public class CocktailRecommendationController {
     private CocktailRecommendationService cocktailRecommendationService;
 
     @PostMapping("/{id}")
-    public List<Cocktail> getById(@PathVariable Long id, @RequestBody TastePreference tastePreference) {
+    public List<Cocktail.CocktailDisplayDTO> recommendCocktails(@PathVariable Long id, @RequestBody TastePreference tastePreference) {
         return cocktailRecommendationService.recommendCocktail(id, tastePreference);
     }
 }
