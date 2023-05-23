@@ -36,21 +36,30 @@ public class DroolsConfiguration {
         kScanner.start(1000);
 
         KieSession cocktailRecommendationKSession = kieContainer.newKieSession("cocktailRecommendationKSession");
-
-        for (Cocktail cocktail: cocktailRepository.findAll()){
-            cocktailRecommendationKSession.insert(cocktail);
-        }
-
-        for (Ingredient ingredient: ingredientRepository.findAll()) {
-            cocktailRecommendationKSession.insert(ingredient);
-        }
-
+        addCocktailsToSession(cocktailRecommendationKSession);
+        addIngredientsToSession(cocktailRecommendationKSession);
         sessions.put("cocktail_recommendation", cocktailRecommendationKSession);
-        sessions.put("event_planning", kieContainer.newKieSession("eventPlanningKSession"));
+
+        KieSession eventPlanningKSession = kieContainer.newKieSession("eventPlanningKSession");
+        addCocktailsToSession(eventPlanningKSession);
+        sessions.put("event_planning", eventPlanningKSession);
+
         sessions.put("inventory_tracking", kieContainer.newKieSession("inventoryTrackingKSession"));
         sessions.put("menu_update", kieContainer.newKieSession("menuUpdateKSession"));
 
         return sessions;
+    }
+
+    private void addIngredientsToSession(KieSession cocktailRecommendationKSession) {
+        for (Ingredient ingredient: ingredientRepository.findAll()) {
+            cocktailRecommendationKSession.insert(ingredient);
+        }
+    }
+
+    private void addCocktailsToSession(KieSession cocktailRecommendationKSession) {
+        for (Cocktail cocktail: cocktailRepository.findAll()){
+            cocktailRecommendationKSession.insert(cocktail);
+        }
     }
 }
 

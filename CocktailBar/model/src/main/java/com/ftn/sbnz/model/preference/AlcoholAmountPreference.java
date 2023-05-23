@@ -25,5 +25,14 @@ public class AlcoholAmountPreference implements Preference {
         return alcoholStrength == AlcoholStrength.LIGHT;
     }
 
+    public AlcoholAmountPreference(Long referenceId, String alcoholStrength) {
+        this.referenceId = referenceId;
+        this.alcoholStrength = AlcoholStrength.valueOf(alcoholStrength);
+    }
+
+    public AlcoholAmountPreference(String alcoholStrength) {
+        this.alcoholStrength = AlcoholStrength.valueOf(alcoholStrength);
+    }
+
 
 }

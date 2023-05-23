@@ -1,0 +1,188 @@
+package rules.event;
+
+import com.ftn.sbnz.model.event.*;
+import com.ftn.sbnz.model.preference.*
+import com.ftn.sbnz.model.cocktail.*
+import java.util.*;
+import java.util.stream.Collectors
+import com.ftn.sbnz.model.cocktail.RecipeIngredient;
+
+
+rule "CalculateMaleAlcoholAmountPreferenceCount"
+salience(20)
+when
+    GuestAmount($guests: amount)
+    MaleGuestAmount($males: amount)
+then
+    int amountOfDrinks = (int)((double)$males / (double)$guests * 10);
+    insert(new AlcoholAmountPreferenceCount("STRONG", amountOfDrinks/2));
+    insert(new AlcoholAmountPreferenceCount("MEDIUM", amountOfDrinks - amountOfDrinks/2));
+end
+
+rule "CalculateFemaleAlcoholAmountPreferenceCount"
+salience(20)
+when
+    GuestAmount($guests: amount)
+    FemaleGuestAmount($females: amount)
+then
+    int amountOfDrinks = (int)((double)$females / (double)$guests * 10);
+    insert(new AlcoholAmountPreferenceCount( "LIGHT", amountOfDrinks/2));
+    insert(new AlcoholAmountPreferenceCount("MEDIUM", amountOfDrinks - amountOfDrinks/2));
+end
+
+
+rule "AddFirstStrongAlcoholAmountPreference"
+salience(15)
+when
+    $count: AlcoholAmountPreferenceCount(strength=="STRONG", amount>0)
+    not AlcoholAmountPreference(isStrong())
+then
+
+    insert(new AlcoholAmountPreference("STRONG"));
+end
+
+
+rule "AddFirstMediumAlcoholAmountPreference"
+salience(15)
+when
+    AlcoholAmountPreferenceCount(strength=="MEDIUM", amount>0)
+    not AlcoholAmountPreference(isMedium())
+then
+    insert(new AlcoholAmountPreference("MEDIUM"));
+end
+
+
+rule "AddFirstLightAlcoholAmountPreference"
+salience(15)
+when
+    AlcoholAmountPreferenceCount(strength=="LIGHT", amount>0)
+    not AlcoholAmountPreference(isLight())
+then
+    insert(new AlcoholAmountPreference("LIGHT"));
+end
+
+
+rule "AddStrongAlcoholAmountPreference"
+salience(10)
+when
+    $totalAmount: Number() from accumulate(
+        AlcoholAmountPreferenceCount($amount: amount, strength=="STRONG"),
+        sum($amount)
+    )
+    $count: Number() from accumulate(
+        AlcoholAmountPreference(isStrong()),
+        count(1)
+    )
+    eval($count.intValue() < $totalAmount.intValue())
+then
+    insert(new AlcoholAmountPreference("STRONG"));
+end
+
+rule "AddMediumAlcoholAmountPreference"
+salience(10)
+when
+    $totalAmount: Number() from accumulate(
+        AlcoholAmountPreferenceCount($amount: amount, strength=="MEDIUM"),
+        sum($amount)
+    )
+    $count: Number() from accumulate(
+        AlcoholAmountPreference(isMedium()),
+        count(1)
+    )
+    eval($count.intValue() < $totalAmount.intValue())
+then
+    insert(new AlcoholAmountPreference("MEDIUM"));
+end
+
+rule "AddLightAlcoholAmountPreference"
+salience(10)
+when
+    $totalAmount: Number() from accumulate(
+        AlcoholAmountPreferenceCount($amount: amount, strength=="LIGHT"),
+        sum($amount)
+    )
+    $count: Number() from accumulate(
+        AlcoholAmountPreference(isLight()),
+        count(1)
+    )
+    eval($count.intValue() < $totalAmount.intValue())
+then
+    insert(new AlcoholAmountPreference("LIGHT"));
+end
+
+rule "DeleteAlcoholAmountPreferenceCount"
+    salience(5)
+when
+    $ampc: AlcoholAmountPreferenceCount($amount: amount)
+    $count: Number() from accumulate(
+        AlcoholAmountPreference(),
+        count(1)
+    )
+    eval($count.intValue() >= 10)
+then
+    System.out.println("Deleted");
+    delete($ampc);
+end
+
+
+
+rule "AddGlassPreference"
+when $eventGlassPreference: EventGlassPreference(areNotGlassesEmpty(), $glasses: glasses, $eventId:eventId)
+then
+
+    Glass glass = (Glass) $glasses.get(0);
+    delete($eventGlassPreference);
+    $glasses = $glasses.subList(1, $glasses.size());
+    insert(new EventGlassPreference($eventId, $glasses));
+    insert(new GlassPreference($eventId, glass));
+end
+
+
+rule "AddCocktailAndIngredients"
+when
+    $glassPreference: GlassPreference($glass: glass)
+    $alcoholAmountPreference: AlcoholAmountPreference($alcoholStrength: alcoholStrength)
+    $cocktail: Cocktail(glass == $glass, alcoholStrength == $alcoholStrength)
+    $event: Event(doesNotContain($cocktail))
+    NumberOfEachCocktail($numberOfEachCocktail: amount)
+    $eventIngredients: EventIngredientList()
+then
+    delete($glassPreference);
+    delete($alcoholAmountPreference);
+
+
+    Event event = new Event($event);
+    event.addCocktailToMenu($cocktail);
+
+    for (RecipeIngredient recipeIngredient: $cocktail.getRecipeIngredients()) {
+        Ingredient ingredient = recipeIngredient.getIngredient();
+        double amount = Math.ceil((recipeIngredient.getAmount() * $numberOfEachCocktail)/1000)*1000;
+        RecipeIngredient existing = $eventIngredients.getRecipeIngredient(ingredient);
+        if (existing != null) {
+            existing.setAmount(existing.getAmount() + amount);
+        }
+        else {
+            $eventIngredients.add(new RecipeIngredient(ingredient, amount));
+        }
+    }
+    delete($event);
+    insert(event);
+
+    delete($eventIngredients);
+    insert($eventIngredients);
+end
+
+
+rule "CalculateNumberOfEachCocktail"
+when
+    EventHours($hours:hours)
+    GuestAmount($guests: amount)
+then
+    int drinksPerPerson = (int)Math.ceil(((double) $hours)/2);
+    int totalDrinks = $guests * drinksPerPerson;
+    int numberOfEachCocktail = (int) Math.ceil(((double)totalDrinks / 10.0) * 1.5);
+
+    insert(new NumberOfEachCocktail(numberOfEachCocktail));
+ end
+
+

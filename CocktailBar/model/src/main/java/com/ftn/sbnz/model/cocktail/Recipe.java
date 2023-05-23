@@ -28,7 +28,8 @@ public class Recipe {
                 .mapToDouble(recipeIngredient -> recipeIngredient.getAmount() * recipeIngredient.getIngredient().getAlcoholPercentage() / 100.0)
                 .sum();
 
-        return totalAlcohol/totalLiquid;
+        if (totalAlcohol > 0) return totalAlcohol/totalLiquid*100;
+        return 0;
     }
 
     public List<Ingredient> getIngredients() {

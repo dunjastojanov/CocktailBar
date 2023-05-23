@@ -6,6 +6,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -24,14 +25,28 @@ public class Cocktail {
         return recipe.calculateStrength();
     }
 
+    public boolean isAlcoholStrength(AlcoholStrength alcoholStrength) {
+        if (alcoholStrength == AlcoholStrength.LIGHT)
+            return calculateStrength() < 5;
+        else if (alcoholStrength == AlcoholStrength.MEDIUM) {
+            double strength = calculateStrength();
+            return strength > 5 && strength < 10;
+        } else
+            return calculateStrength() > 10;
+    }
+
     public List<Ingredient> getIngredients() {
         return recipe.getIngredients();
+    }
+
+    public Set<RecipeIngredient> getRecipeIngredients() {
+        return recipe.getRecipeIngredients();
     }
 
     public AlcoholStrength getAlcoholStrength() {
         double strength = calculateStrength();
         if (strength < 15) return AlcoholStrength.LIGHT;
-        if (strength > 15 && strength <35) return AlcoholStrength.MEDIUM;
+        if (strength > 15 && strength < 35) return AlcoholStrength.MEDIUM;
         else return AlcoholStrength.STRONG;
     }
 
@@ -58,19 +73,18 @@ public class Cocktail {
         String image;
         AlcoholStrength alcoholStrength;
         List<Ingredient.IngredientDisplayDTO> ingredients = new ArrayList<>();
+
         public CocktailDisplayDTO(Cocktail cocktail) {
             name = cocktail.getName();
             glass = cocktail.getGlass().toString();
             image = cocktail.getImage();
             alcoholStrength = cocktail.getAlcoholStrength();
 
-            for (Ingredient ingredient: cocktail.getIngredients()) {
+            for (Ingredient ingredient : cocktail.getIngredients()) {
                 ingredients.add(new Ingredient.IngredientDisplayDTO(ingredient));
             }
         }
     }
-
-
 
 
 }
