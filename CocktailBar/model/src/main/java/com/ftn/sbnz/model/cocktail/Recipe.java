@@ -22,6 +22,19 @@ public class Recipe {
     @Column(length = 65535)
     private String instructions;
 
+    public double calculateStrength() {
+        double totalLiquid = recipeIngredients.stream().map(RecipeIngredient::getAmount).reduce(0.0, Double::sum);
+        double totalAlcohol = recipeIngredients.stream()
+                .mapToDouble(recipeIngredient -> recipeIngredient.getAmount() * recipeIngredient.getIngredient().getAlcoholPercentage() / 100.0)
+                .sum();
+
+        return totalAlcohol/totalLiquid;
+    }
+
+    public List<Ingredient> getIngredients() {
+        return recipeIngredients.stream().map(RecipeIngredient::getIngredient).toList();
+    }
+
     @Data
     public static class RecipeDTO {
         private List<Long> recipeIngredients;

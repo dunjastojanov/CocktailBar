@@ -1,0 +1,137 @@
+package rules.cocktail;
+
+import com.ftn.sbnz.model.preference.*;
+import com.ftn.sbnz.model.user.*;
+import com.ftn.sbnz.model.cocktail.*;
+import java.util.*
+import java.util.stream.Collectors;
+
+import org.drools.core.spi.KnowledgeHelper;
+
+
+rule "AccumulateFlavors"
+lock-on-active true
+when
+  $user: User($userId: id)
+  $set: Set() from accumulate(
+    FlavorPreference($userId == referenceId, $flavor: flavor),
+    collectSet($flavor)
+  )
+then
+  TasteProfile tasteProfile = new TasteProfile();
+  tasteProfile.setReferenceId($userId);
+  tasteProfile.setFlavors($set);
+  insert(tasteProfile);
+  System.out.println("Accumulated flavors.");
+
+end
+
+
+rule "AccumulateCocktailByIngredient"
+when
+  $preferableIngredientList: PreferableIngredientList($ingredients: ingredients)
+  $set: Set() from accumulate(
+    $cocktail: Cocktail(),
+    collectSet($cocktail)
+  )
+then
+  PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
+  preferableCocktailList.setReferenceId($preferableIngredientList.getReferenceId());
+
+  for (Object object: $set) {
+      Cocktail cocktail = (Cocktail) object;
+      if (cocktail.getRecipe().getRecipeIngredients().stream().anyMatch(
+              recipeIngredient -> {
+                  return $preferableIngredientList.containsIngredient(recipeIngredient.getIngredient());
+              })) {
+          preferableCocktailList.addCocktail(cocktail);
+      }
+  }
+  insert(preferableCocktailList);
+  System.out.println("Accumulated cocktails by ingredient. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterCocktailsBasedOnGlass"
+when
+    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
+    $glassPreference: GlassPreference(referenceId == $referenceId)
+then
+    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
+    preferableCocktailList.setCocktails($preferableCocktailList.getCocktails().stream().filter(cocktail -> {return cocktail.getGlass() == $glassPreference.getGlass();}).collect(Collectors.toSet()));
+    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
+    delete($preferableCocktailList);
+    delete($glassPreference);
+    insert(preferableCocktailList);
+    System.out.println("Filtered cocktails by glass. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterStrongCocktails"
+no-loop true
+when
+    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
+    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isStrong())
+then
+    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
+    preferableCocktailList.setCocktails(
+                $preferableCocktailList.getCocktails().stream().filter(
+                cocktail -> {return cocktail.calculateStrength() > 35.0;}
+                ).collect(Collectors.toSet()));
+    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
+    delete($preferableCocktailList);
+    insert(preferableCocktailList);
+    System.out.println("Filtered strong cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterMediumCocktails"
+no-loop true
+when
+    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
+    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isMedium())
+then
+    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
+    preferableCocktailList.setCocktails($preferableCocktailList.getCocktails().stream().filter(cocktail -> {return cocktail.calculateStrength()>15.0 && cocktail.calculateStrength() < 35.0;}).collect(Collectors.toSet()));
+    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
+    delete($preferableCocktailList);
+    insert(preferableCocktailList);
+    System.out.println("Filtered medium cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterLightCocktails"
+no-loop true
+when
+    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
+    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isLight())
+then
+    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
+    preferableCocktailList.setCocktails(
+            $preferableCocktailList.getCocktails().stream().filter(
+                    cocktail -> {return cocktail.calculateStrength() < 15.0;}
+                    ).collect(Collectors.toSet()));
+    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
+    delete($preferableCocktailList);
+    insert(preferableCocktailList);
+    System.out.println("Filtered light cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "AccumulateIngredientsByFlavor"
+when
+  $tasteProfile: TasteProfile($flavors: flavors)
+
+  $set: Set() from accumulate(
+      $ingredient: Ingredient(flavor memberOf $flavors, recipe == null),
+      collectSet($ingredient)
+    )
+then
+  PreferableIngredientList preferableIngredientList = new PreferableIngredientList();
+  preferableIngredientList.setReferenceId($tasteProfile.getReferenceId());
+  preferableIngredientList.setIngredients($set);
+
+  insert(preferableIngredientList);
+  System.out.println("Accumulated ingredients.");
+end
+
