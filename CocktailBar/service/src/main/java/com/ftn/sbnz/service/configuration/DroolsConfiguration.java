@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,9 @@ public class DroolsConfiguration {
 
     @Autowired
     private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private IngredientInventoryRepository ingredientInventoryRepository;
 
     @Bean
     public Map<String, KieSession> kieSessions() {
@@ -44,7 +48,15 @@ public class DroolsConfiguration {
         addCocktailsToSession(eventPlanningKSession);
         sessions.put("event_planning", eventPlanningKSession);
 
-        sessions.put("inventory_tracking", kieContainer.newKieSession("inventoryTrackingKSession"));
+        KieSession inventoryTrackingSession = kieContainer.newKieSession("inventoryTrackingKSession");
+
+        ingredientInventoryRepository.findAll().forEach(ingredientInventory -> {
+            Date inserted=new Date();
+            inserted.setTime(System.currentTimeMillis());
+            inserted.setTime(inserted.getTime()-1000*60*15);
+            inventoryTrackingSession.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
+        });
+        sessions.put("inventory_tracking", inventoryTrackingSession);
         sessions.put("menu_update", kieContainer.newKieSession("menuUpdateKSession"));
 
         return sessions;

@@ -1,11 +1,13 @@
 package com.ftn.sbnz.model.cocktail;
 
 import lombok.Data;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Entity
 @Data
+@ToString
 public class Ingredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +23,14 @@ public class Ingredient {
 
     public Long getRecipeId() {
         return recipe.getId();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Data

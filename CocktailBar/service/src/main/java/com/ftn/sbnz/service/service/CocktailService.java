@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Optional;
 
 @Service
 public class CocktailService {
@@ -56,5 +57,12 @@ public class CocktailService {
 
     public void delete(Long id) {
         cocktailRepository.deleteById(id);
+    }
+
+    public Cocktail getCocktailByName(String cocktailName) {
+        Optional<Cocktail> cocktail = cocktailRepository.findByName(cocktailName);
+        if (cocktail.isEmpty())
+            throw new RuntimeException("No cocktail with this name");
+        return cocktail.get();
     }
 }

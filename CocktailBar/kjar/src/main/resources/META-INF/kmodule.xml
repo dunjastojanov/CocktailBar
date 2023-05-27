@@ -7,7 +7,7 @@
         <ksession name="eventPlanningKSession" type="stateful"/>
     </kbase>
 
-    <kbase name="inventoryTrackingKBase" packages="inventory">
+    <kbase name="inventoryTrackingKBase" eventProcessingMode="stream" packages="inventory">
         <ksession name="inventoryTrackingKSession" type="stateful"/>
     </kbase>
 
