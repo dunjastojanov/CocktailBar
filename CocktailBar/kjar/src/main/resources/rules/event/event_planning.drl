@@ -1,0 +1,13 @@
+package rules.inventory;
+import com.ftn.sbnz.model.inventory.*;
+import com.ftn.sbnz.model.cocktail.*;
+
+import org.drools.core.spi.KnowledgeHelper;
+
+rule "CreateIngredientAlteration"
+when
+    $list: List() accumulate
+then
+
+end
+
