@@ -1,9 +1,14 @@
 package com.ftn.sbnz.model.inventory;
 
-import com.ftn.sbnz.model.cocktail.Ingredient;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class LowIngredientAlarm {
-    private Ingredient ingredient;
+    private String ingredientName;
+
+    public LowIngredientAlarm(String ingredientName) {
+        this.ingredientName = ingredientName;
+    }
 }

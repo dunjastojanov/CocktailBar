@@ -1,0 +1,74 @@
+package rules.inventory;
+import com.ftn.sbnz.model.inventory.*;
+import com.ftn.sbnz.model.cocktail.*;
+
+import org.drools.core.spi.KnowledgeHelper;
+
+rule "CreateIngredientAlteration"
+when
+    $rI: RecipeIngredient(
+        $ingredientId: ingredient.getId(),
+        $ingredientName: ingredient.getName(),
+        $ingredientAmount: amount
+    )
+then
+    IngredientAlteration ia=new IngredientAlteration();
+    ia.setIngredientId($ingredientId);
+    ia.setName($ingredientName);
+    ia.setAmount($ingredientAmount);
+    insert(ia);
+    delete($rI);
+end
+
+
+rule "InventoryHasLessIngredientAmount"
+no-loop true
+when
+    $ingredientAlteration: IngredientAlteration(
+        $ingredientId: ingredientId,
+        $ingredientAmount: amount,
+        $ingredientName: name
+    )
+    $inventoryIngredientEvent: IngredientInventoryCEPEvent(
+        getIngredientInventoryId() == $ingredientId,
+        $inventoryAmount: amount,
+        this after[10m] $ingredientAlteration
+    )
+    $amount: Double() from ($inventoryAmount - $ingredientAmount)
+    eval($amount < 0);
+then
+    System.out.println("prolazi");
+    delete($ingredientAlteration);
+    modify($inventoryIngredientEvent) {
+        setAmount($amount);
+    }
+    insert(new LowIngredientAlarm($ingredientName));
+    $inventoryIngredientEvent.updateTime();
+end
+
+
+
+rule "InventoryHasMoreIngredientAmount"
+no-loop true
+when
+    $ingredientAlteration: IngredientAlteration(
+        $ingredientId: ingredientId,
+        $ingredientAmount: amount,
+        $ingredientName: name
+    )
+    $inventoryIngredientEvent: IngredientInventoryCEPEvent(
+        getIngredientInventoryId() == $ingredientId,
+        $inventoryAmount: amount,
+        this before[10m] $ingredientAlteration
+    )
+    $amount: Double() from ($inventoryAmount - $ingredientAmount)
+    eval($amount > 0);
+then
+    System.out.println("prolazi");
+    System.out.println($amount);
+    delete($ingredientAlteration);
+    modify($inventoryIngredientEvent) {
+        setAmount($amount);
+    }
+    $inventoryIngredientEvent.updateTime();
+end
