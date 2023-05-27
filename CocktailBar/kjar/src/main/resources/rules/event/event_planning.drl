@@ -123,51 +123,18 @@ then
     delete($ampc);
 end
 
-rule "AddCocktailAndIngredients"
+rule "AddCocktail"
 when
     $glassPreference: GlassPreference($glass: glass)
     $alcoholAmountPreference: AlcoholAmountPreference($alcoholStrength: alcoholStrength)
     $cocktail: Cocktail(glass == $glass, alcoholStrength == $alcoholStrength)
     $event: Event(doesNotContain($cocktail))
-    NumberOfEachCocktail($numberOfEachCocktail: amount)
-    $eventIngredients: EventIngredientList()
 then
     delete($glassPreference);
     delete($alcoholAmountPreference);
 
-
-    Event event = new Event($event);
-    event.addCocktailToMenu($cocktail);
-
-    for (RecipeIngredient recipeIngredient: $cocktail.getRecipeIngredients()) {
-        Ingredient ingredient = recipeIngredient.getIngredient();
-        double amount = Math.ceil((recipeIngredient.getAmount() * $numberOfEachCocktail)/1000)*1000;
-        RecipeIngredient existing = $eventIngredients.getRecipeIngredient(ingredient);
-        if (existing != null) {
-            existing.setAmount(existing.getAmount() + amount);
-        }
-        else {
-            $eventIngredients.add(new RecipeIngredient(ingredient, amount));
-        }
-    }
-    delete($event);
-    insert(event);
-
-    delete($eventIngredients);
-    insert($eventIngredients);
+    modify($event){addCocktailToMenu($cocktail)}
 end
 
-
-rule "CalculateNumberOfEachCocktail"
-when
-    EventHours($hours:hours)
-    GuestAmount($guests: amount)
-then
-    int drinksPerPerson = (int)Math.ceil(((double) $hours)/2);
-    int totalDrinks = $guests * drinksPerPerson;
-    int numberOfEachCocktail = (int) Math.ceil(((double)totalDrinks / 10.0) * 1.5);
-
-    insert(new NumberOfEachCocktail(numberOfEachCocktail));
- end
 
 

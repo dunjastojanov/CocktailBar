@@ -3,11 +3,14 @@ package com.ftn.sbnz.service.service;
 import com.ftn.sbnz.model.cocktail.Cocktail;
 import com.ftn.sbnz.model.cocktail.Glass;
 import com.ftn.sbnz.model.cocktail.Ingredient;
+import com.ftn.sbnz.model.cocktail.RecipeIngredient;
 import com.ftn.sbnz.model.event.*;
 import com.ftn.sbnz.model.preference.GlassPreference;
 import com.ftn.sbnz.service.configuration.DroolsConfiguration;
 import org.drools.template.ObjectDataCompiler;
+import org.kie.api.KieServices;
 import org.kie.api.io.ResourceType;
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EventPlanningService {
@@ -25,13 +29,18 @@ public class EventPlanningService {
     private Map<String, KieSession> kieSessions;
 
     public EventDisplay planEvent(Long id, EventPreferences eventPreferences) {
+        Event event = calculateEventMenu(id, eventPreferences);
+        return new EventDisplay(event.getMenu(), calculateIngredients(eventPreferences, event));
+    }
+
+    private Event calculateEventMenu(Long id, EventPreferences eventPreferences) {
         KieSession kieSession = kieSessions.get("event_planning");
         if (kieSession != null) {
-            kieSession.insert(new EventHours(id, eventPreferences.getEventHours()));
-            kieSession.insert(new GuestAmount(id, eventPreferences.getGuestAmount()));
+            kieSession.insert(new EventHours(eventPreferences.getEventHours()));
+            kieSession.insert(new GuestAmount(eventPreferences.getGuestAmount()));
             kieSession.insert(new MaleGuestAmount(id, eventPreferences.getMaleGuestAmount()));
             kieSession.insert(new FemaleGuestAmount(id, eventPreferences.getFemaleGuestAmount()));
-            kieSession.insert(new EventIngredientList(id, new ArrayList<>()));
+            kieSession.insert(new EventIngredientList(new ArrayList<>()));
             kieSession.insert(getEvent(id));
             addGlassPreference(eventPreferences.getEventType(), kieSession);
 
@@ -45,28 +54,38 @@ public class EventPlanningService {
                     .findFirst()
                     .orElse(null);
 
-            EventIngredientList eventIngredientList = objects.stream()
-                    .filter(object -> object instanceof EventIngredientList)
-                    .map(object -> (EventIngredientList) object)
-                    .findFirst()
-                    .orElse(null);
-
             removeObjectsFromSession(kieSession, objects);
 
-            for (Cocktail cocktail : event.getMenu()) {
-                System.out.println(cocktail.getName() + " " + cocktail.getAlcoholStrength() + " " + cocktail.getGlass());
-            }
-
-            if (eventIngredientList != null) {
-                return new EventDisplay(eventIngredientList.getIngredients(), event.getMenu());
-
-            } else throw new RuntimeException("Unable to plan an event.");
+            return event;
 
         } else {
             throw new RuntimeException("Session is null.");
         }
+    }
 
+    private List<RecipeIngredient.RecipeIngredientDisplay> calculateIngredients(EventPreferences eventPreferences, Event event) {
+        KieServices kieServices = KieServices.Factory.get();
 
+        KieContainer kieContainer = kieServices
+                .newKieContainer(kieServices.newReleaseId("com.ftn.sbnz", "kjar", "0.0.1-SNAPSHOT"));
+
+        KieSession kieSession = kieContainer.newKieSession("eventIngredientsKSession");
+
+        if (kieSession != null) {
+            kieSession.insert(new EventHours(eventPreferences.getEventHours()));
+            kieSession.insert(new GuestAmount(eventPreferences.getGuestAmount()));
+            event.getMenu().forEach(cocktail -> {
+                cocktail.getRecipeIngredients().forEach(kieSession::insert);
+            });
+            kieSession.fireAllRules();
+
+            Collection<?> objects = kieSession.getObjects();
+            kieSession.dispose();
+
+            return (List<RecipeIngredient.RecipeIngredientDisplay>) objects.stream().filter(o -> o instanceof RecipeIngredient.RecipeIngredientDisplay).collect(Collectors.toList());
+        } else {
+            throw new RuntimeException("Session is null.");
+        }
     }
 
     private static Event getEvent(Long id) {

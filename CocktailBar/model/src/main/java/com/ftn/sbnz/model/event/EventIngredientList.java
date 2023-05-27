@@ -13,9 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventIngredientList {
-    private Long eventId;
     private List<RecipeIngredient> ingredients = new ArrayList<>();
-
 
     public boolean contains(Ingredient ingredient) {
         return ingredients.stream()
@@ -25,6 +23,16 @@ public class EventIngredientList {
 
     public void add(RecipeIngredient recipeIngredient) {
         ingredients.add(recipeIngredient);
+    }
+
+    public RecipeIngredient getRecipeIngredient(RecipeIngredient recipeIngredient) {
+
+        for (RecipeIngredient existing: ingredients) {
+            if (existing.getIngredient() == recipeIngredient.getIngredient())
+                return existing;
+        }
+
+        return null;
     }
 
     public RecipeIngredient getRecipeIngredient(Ingredient ingredient) {

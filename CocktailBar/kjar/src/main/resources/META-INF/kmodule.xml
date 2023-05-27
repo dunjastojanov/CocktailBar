@@ -23,4 +23,8 @@
         <ksession name="menuUpdateKSession" type="stateful"/>
     </kbase>
 
+    <kbase name="eventIngredientsKBase" packages="event_ingredients">
+        <ksession name="eventIngredientsKSession" type="stateful"/>
+    </kbase>
+
 </kmodule>
