@@ -28,6 +28,9 @@ public class RecipeIngredient {
     public Long getIngredientId() {
         return ingredient.getId();
     }
+    public String getIngredientName() {
+        return ingredient.getName();
+    }
 
     @Data
     public static class RecipeIngredientDTO {

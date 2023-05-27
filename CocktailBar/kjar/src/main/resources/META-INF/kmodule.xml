@@ -3,6 +3,10 @@
         <ksession name="cocktailRecommendationKSession" type="stateful"/>
     </kbase>
 
+    <kbase name="cocktailTemplateKBase" packages="cocktail_template">
+        <ksession name="cocktailTemplateKSession"/>
+    </kbase>
+
     <kbase name="eventPlanningKBase" packages="event">
         <ksession name="eventPlanningKSession" type="stateful"/>
     </kbase>

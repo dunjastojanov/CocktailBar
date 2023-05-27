@@ -1,0 +1,21 @@
+template header
+type
+amount
+name
+id
+
+package cocktail_template
+
+import com.ftn.sbnz.model.cocktail.*;
+import com.ftn.sbnz.model.template.*;
+
+template "Cocktail template"
+    rule "rule_cocktail_@{name}"
+        when
+            $ingredient: Ingredient(type.name() == "@{type}")
+            $template: CocktailTemplate(id.toString() == "@{id}")
+        then
+            RecipeIngredient recipeIngredient = new RecipeIngredient($ingredient, @{amount});
+            insert(new Cocktail($template, recipeIngredient));
+    end
+end template

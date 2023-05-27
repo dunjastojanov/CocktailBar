@@ -1,6 +1,8 @@
 package com.ftn.sbnz.model.cocktail;
 
 import com.ftn.sbnz.model.preference.AlcoholStrength;
+import com.ftn.sbnz.model.template.CocktailTemplate;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -10,6 +12,7 @@ import java.util.Set;
 
 @Entity
 @Data
+@AllArgsConstructor
 public class Cocktail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +23,16 @@ public class Cocktail {
     private String image;
     @OneToOne
     private Recipe recipe;
+
+    public Cocktail() {
+    }
+
+    public Cocktail(CocktailTemplate cocktailTemplate, RecipeIngredient recipeIngredient) {
+        recipe = new Recipe(cocktailTemplate.getRecipe(), recipeIngredient);
+        glass = cocktailTemplate.getGlass();
+        image = cocktailTemplate.getImage();
+        name = recipeIngredient.getIngredientName() + " " + cocktailTemplate.getName();
+    }
 
     public double calculateStrength() {
         return recipe.calculateStrength();
