@@ -120,23 +120,8 @@ when
     )
     eval($count.intValue() >= 10)
 then
-    System.out.println("Deleted");
     delete($ampc);
 end
-
-
-
-rule "AddGlassPreference"
-when $eventGlassPreference: EventGlassPreference(areNotGlassesEmpty(), $glasses: glasses, $eventId:eventId)
-then
-
-    Glass glass = (Glass) $glasses.get(0);
-    delete($eventGlassPreference);
-    $glasses = $glasses.subList(1, $glasses.size());
-    insert(new EventGlassPreference($eventId, $glasses));
-    insert(new GlassPreference($eventId, glass));
-end
-
 
 rule "AddCocktailAndIngredients"
 when

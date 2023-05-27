@@ -1,0 +1,35 @@
+template header
+count
+glass
+eventType
+
+package event_template
+
+import com.ftn.sbnz.model.cocktail.*;
+import com.ftn.sbnz.model.template.*;
+import com.ftn.sbnz.model.preference.*;
+
+template "Event template"
+
+    rule "rule_insert_first_glass_@{eventType}_@{glass}"
+        when
+            not(GlassPreference(glass.name() == "@{glass}"))
+        then
+            GlassPreference newPreference = new GlassPreference();
+            newPreference.setGlass("@{glass}");
+            insert(newPreference);
+    end
+
+    rule "rule_insert_glass_@{eventType}_@{glass}"
+    when
+        $count: Number() from accumulate(
+                GlassPreference(glass.name() == "@{glass}"),
+                count(1)
+            )
+        eval($count.intValue() < Integer.valueOf("@{count}"))
+    then
+        GlassPreference newPreference = new GlassPreference();
+        newPreference.setGlass("@{glass}");
+        insert(newPreference);
+    end
+end template
