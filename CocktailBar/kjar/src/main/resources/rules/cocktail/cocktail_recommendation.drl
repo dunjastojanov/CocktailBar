@@ -8,9 +8,8 @@ import java.util.stream.Collectors;
 
 import org.drools.core.spi.KnowledgeHelper;
 
-
 rule "AccumulateFlavors"
-lock-on-active true
+salience(30)
 when
   $user: User($userId: id)
   $set: Set() from accumulate(
@@ -23,105 +22,12 @@ then
   tasteProfile.setFlavors($set);
   insert(tasteProfile);
   System.out.println("Accumulated flavors.");
-
 end
-
-
-rule "AccumulateCocktailByIngredient"
-when
-  $preferableIngredientList: PreferableIngredientList($ingredients: ingredients)
-  $set: Set() from accumulate(
-    $cocktail: Cocktail(),
-    collectSet($cocktail)
-  )
-then
-  PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
-  preferableCocktailList.setReferenceId($preferableIngredientList.getReferenceId());
-
-  for (Object object: $set) {
-      Cocktail cocktail = (Cocktail) object;
-      if (cocktail.getRecipe().getRecipeIngredients().stream().anyMatch(
-              recipeIngredient -> {
-                  return $preferableIngredientList.containsIngredient(recipeIngredient.getIngredient());
-              })) {
-          preferableCocktailList.addCocktail(cocktail);
-      }
-  }
-  insert(preferableCocktailList);
-  System.out.println("Accumulated cocktails by ingredient. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
-end
-
-
-rule "FilterCocktailsBasedOnGlass"
-when
-    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
-    $glassPreference: GlassPreference(referenceId == $referenceId)
-then
-    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
-    preferableCocktailList.setCocktails($preferableCocktailList.getCocktails().stream().filter(cocktail -> {return cocktail.getGlass() == $glassPreference.getGlass();}).collect(Collectors.toSet()));
-    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
-    delete($preferableCocktailList);
-    delete($glassPreference);
-    insert(preferableCocktailList);
-    System.out.println("Filtered cocktails by glass. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
-end
-
-
-rule "FilterStrongCocktails"
-no-loop true
-when
-    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
-    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isStrong())
-then
-    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
-    preferableCocktailList.setCocktails(
-                $preferableCocktailList.getCocktails().stream().filter(
-                cocktail -> {return cocktail.calculateStrength() > 35.0;}
-                ).collect(Collectors.toSet()));
-    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
-    delete($preferableCocktailList);
-    insert(preferableCocktailList);
-    System.out.println("Filtered strong cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
-end
-
-
-rule "FilterMediumCocktails"
-no-loop true
-when
-    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
-    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isMedium())
-then
-    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
-    preferableCocktailList.setCocktails($preferableCocktailList.getCocktails().stream().filter(cocktail -> {return cocktail.calculateStrength()>15.0 && cocktail.calculateStrength() < 35.0;}).collect(Collectors.toSet()));
-    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
-    delete($preferableCocktailList);
-    insert(preferableCocktailList);
-    System.out.println("Filtered medium cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
-end
-
-
-rule "FilterLightCocktails"
-no-loop true
-when
-    $preferableCocktailList: PreferableCocktailList($referenceId: referenceId)
-    $alcoholAmountPreference: AlcoholAmountPreference(referenceId == $referenceId, isLight())
-then
-    PreferableCocktailList preferableCocktailList = new PreferableCocktailList();
-    preferableCocktailList.setCocktails(
-            $preferableCocktailList.getCocktails().stream().filter(
-                    cocktail -> {return cocktail.calculateStrength() < 15.0;}
-                    ).collect(Collectors.toSet()));
-    preferableCocktailList.setReferenceId($preferableCocktailList.getReferenceId());
-    delete($preferableCocktailList);
-    insert(preferableCocktailList);
-    System.out.println("Filtered light cocktails. Number of cocktails is " + preferableCocktailList.getCocktails().size() + ".");
-end
-
 
 rule "AccumulateIngredientsByFlavor"
+salience(25)
 when
   $tasteProfile: TasteProfile($flavors: flavors)
-
   $set: Set() from accumulate(
       $ingredient: Ingredient(flavor memberOf $flavors, recipe == null),
       collectSet($ingredient)
@@ -134,4 +40,100 @@ then
   insert(preferableIngredientList);
   System.out.println("Accumulated ingredients.");
 end
+
+rule "InsertPreferableCocktailList"
+salience(20)
+when not(PreferableCocktailList())
+then
+    insert(new PreferableCocktailList());
+    System.out.println("Added preferable cocktail list.");
+end
+
+
+rule "AddCocktailContainingIngredient"
+salience(15)
+when
+    $preferableIngredientList: PreferableIngredientList($ingredients: ingredients)
+    $cocktail: Cocktail(isMadeOfIngredients($ingredients))
+    $preferableCocktailList: PreferableCocktailList(!containsCocktail($cocktail))
+    GlassPreference()
+    AlcoholAmountPreference()
+then
+    modify($preferableCocktailList) {
+        addCocktail($cocktail)
+    }
+    System.out.println("Added cocktail. " + $cocktail.getName() + ". Number of cocktails is " + $preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterCocktailsBasedOnGlass"
+when
+    $preferableCocktailList: PreferableCocktailList($cocktails: cocktails)
+    $glassPreference: GlassPreference($glass: glass)
+    $filteredCocktails: Set() from accumulate(
+        $cocktail: Cocktail(glass == $glass) from $cocktails,
+        collectSet($cocktail)
+    )
+then
+    delete($glassPreference);
+    modify($preferableCocktailList){
+        setCocktails(new HashSet<Cocktail>($filteredCocktails))
+    }
+    System.out.println("Filtered cocktails by glass. Number of cocktails is " + $preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterStrongCocktails"
+no-loop true
+when
+    $preferableCocktailList: PreferableCocktailList($cocktails: cocktails)
+    $alcoholAmountPreference: AlcoholAmountPreference(isStrong())
+    $filteredCocktails: Set() from accumulate(
+        $cocktail: Cocktail(calculateStrength() > 10.0) from $cocktails,
+        collectSet($cocktail)
+    )
+then
+    delete($alcoholAmountPreference);
+    modify($preferableCocktailList){
+        setCocktails(new HashSet<Cocktail>($filteredCocktails))
+    }
+    System.out.println("Filtered strong cocktails. Number of cocktails is " + $preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterMediumCocktails"
+when
+    $preferableCocktailList: PreferableCocktailList($cocktails: cocktails)
+    $alcoholAmountPreference: AlcoholAmountPreference(isMedium())
+    $filteredCocktails: Set() from accumulate (
+        $cocktail: Cocktail(calculateStrength() > 5.0 && calculateStrength() < 10.0) from $cocktails,
+        collectSet($cocktail)
+    )
+then
+    delete($alcoholAmountPreference);
+    modify($preferableCocktailList){
+        setCocktails(new HashSet<Cocktail>($filteredCocktails))
+    }
+    System.out.println("Filtered medium cocktails. Number of cocktails is " + $preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+rule "FilterLightCocktails"
+when
+    $preferableCocktailList: PreferableCocktailList($cocktails: cocktails)
+    $alcoholAmountPreference: AlcoholAmountPreference(isLight())
+    $filteredCocktails: Set() from accumulate (
+        $cocktail: Cocktail(calculateStrength() < 5.0) from $cocktails,
+        collectSet($cocktail)
+    )
+then
+    delete($alcoholAmountPreference);
+    modify($preferableCocktailList){
+        setCocktails(new HashSet<Cocktail>($filteredCocktails))
+    }
+    System.out.println("Filtered light cocktails. Number of cocktails is " + $preferableCocktailList.getCocktails().size() + ".");
+end
+
+
+
 

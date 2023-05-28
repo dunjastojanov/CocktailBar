@@ -38,16 +38,6 @@ public class Cocktail {
         return recipe.calculateStrength();
     }
 
-    public boolean isAlcoholStrength(AlcoholStrength alcoholStrength) {
-        if (alcoholStrength == AlcoholStrength.LIGHT)
-            return calculateStrength() < 5;
-        else if (alcoholStrength == AlcoholStrength.MEDIUM) {
-            double strength = calculateStrength();
-            return strength > 5 && strength < 10;
-        } else
-            return calculateStrength() > 10;
-    }
-
     public List<Ingredient> getIngredients() {
         return recipe.getIngredients();
     }
@@ -56,10 +46,15 @@ public class Cocktail {
         return recipe.getRecipeIngredients();
     }
 
+
+    public boolean isMadeOfIngredients(Set<Ingredient> ingredients) {
+        return recipe.isMadeOfIngredients(ingredients);
+    }
+
     public AlcoholStrength getAlcoholStrength() {
         double strength = calculateStrength();
-        if (strength < 15) return AlcoholStrength.LIGHT;
-        if (strength > 15 && strength < 35) return AlcoholStrength.MEDIUM;
+        if (strength < 5) return AlcoholStrength.LIGHT;
+        if (strength > 5 && strength < 10) return AlcoholStrength.MEDIUM;
         else return AlcoholStrength.STRONG;
     }
 
