@@ -33,4 +33,9 @@ public class AlcoholAmountPreference implements Preference {
     }
 
 
+    public AlcoholAmountPreference(Long referenceId, AlcoholStrength alcoholStrength) {
+        this.referenceId = referenceId;
+        this.alcoholStrength = alcoholStrength;
+    }
+
 }

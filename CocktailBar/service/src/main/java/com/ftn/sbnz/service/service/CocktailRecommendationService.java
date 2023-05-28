@@ -28,7 +28,7 @@ public class CocktailRecommendationService {
         KieSession kieSession = kieSessions.get("cocktail_recommendation");
         if (kieSession != null) {
             kieSession.insert(new GlassPreference(userId, tastePreference.getGlass()));
-            kieSession.insert(new AlcoholAmountPreference(userId, tastePreference.getAlcoholStrength()));
+            kieSession.insert(new AlcoholAmountPreference(userId, tastePreference.getAlcoholStrength().name()));
             kieSession.insert(userService.getUser(userId));
 
             for (Flavor flavor: tastePreference.getFlavors()) {
