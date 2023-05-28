@@ -2,9 +2,11 @@ package com.ftn.sbnz.service.configuration;
 
 import com.ftn.sbnz.model.cocktail.Cocktail;
 import com.ftn.sbnz.model.cocktail.Ingredient;
+import com.ftn.sbnz.model.inventory.IngredientInventoryCEPEvent;
 import com.ftn.sbnz.model.template.CocktailTemplate;
 import com.ftn.sbnz.service.repository.CocktailRepository;
 import com.ftn.sbnz.service.repository.CocktailTemplateRepository;
+import com.ftn.sbnz.service.repository.IngredientInventoryRepository;
 import com.ftn.sbnz.service.repository.IngredientRepository;
 import org.drools.template.ObjectDataCompiler;
 import org.kie.api.KieServices;
@@ -18,10 +20,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 @Configuration
 public class DroolsConfiguration {
@@ -34,6 +38,9 @@ public class DroolsConfiguration {
 
     @Autowired
     private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private IngredientInventoryRepository ingredientInventoryRepository;
 
     @Bean
     public Map<String, KieSession> kieSessions() {
@@ -56,7 +63,15 @@ public class DroolsConfiguration {
         addCocktailsToSession(eventPlanningKSession);
         sessions.put("event_planning", eventPlanningKSession);
 
-        sessions.put("inventory_tracking", kieContainer.newKieSession("inventoryTrackingKSession"));
+        KieSession inventoryTrackingSession = kieContainer.newKieSession("inventoryTrackingKSession");
+
+        ingredientInventoryRepository.findAll().forEach(ingredientInventory -> {
+            Date inserted=new Date();
+            inserted.setTime(System.currentTimeMillis());
+            inserted.setTime(inserted.getTime()-1000*60*15);
+            inventoryTrackingSession.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
+        });
+        sessions.put("inventory_tracking", inventoryTrackingSession);
         sessions.put("menu_update", kieContainer.newKieSession("menuUpdateKSession"));
 
         return sessions;
