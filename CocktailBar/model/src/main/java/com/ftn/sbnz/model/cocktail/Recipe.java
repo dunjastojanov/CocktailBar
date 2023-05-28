@@ -1,6 +1,8 @@
 package com.ftn.sbnz.model.cocktail;
 
 
+import com.ftn.sbnz.model.template.RecipeTemplate;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 @Data
+@AllArgsConstructor
 @Entity
 public class Recipe {
 
@@ -21,6 +24,15 @@ public class Recipe {
 
     @Column(length = 65535)
     private String instructions;
+
+    public Recipe() {}
+
+
+    public Recipe(RecipeTemplate recipeTemplate, RecipeIngredient recipeIngredient) {
+        recipeIngredients=recipeTemplate.getRecipeIngredients();
+        recipeIngredients.add(recipeIngredient);
+        instructions = recipeTemplate.getInstructions();
+    }
 
     public double calculateStrength() {
         double totalLiquid = recipeIngredients.stream().map(RecipeIngredient::getAmount).reduce(0.0, Double::sum);
@@ -35,6 +47,8 @@ public class Recipe {
     public List<Ingredient> getIngredients() {
         return recipeIngredients.stream().map(RecipeIngredient::getIngredient).toList();
     }
+
+
 
     @Data
     public static class RecipeDTO {

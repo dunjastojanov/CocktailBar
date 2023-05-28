@@ -1223,3 +1223,14 @@ INSERT INTO RECIPE_RECIPE_INGREDIENTS (RECIPE_INGREDIENTS_ID, RECIPE_ID) VALUES 
 INSERT INTO ingredient_inventory (amount, ingredient_id, inserted) VALUES ('300','41', CURRENT_DATE);
 INSERT INTO ingredient_inventory (amount, ingredient_id, inserted) VALUES ('300','11', CURRENT_DATE);
 INSERT INTO ingredient_inventory (amount, ingredient_id, inserted) VALUES ('300','89', CURRENT_DATE);
+
+INSERT INTO recipe_ingredient(id, amount, ingredient_id) VALUES (418,60, 90);
+INSERT INTO recipe_ingredient(id, amount, ingredient_id) VALUES (419,30, 59);
+INSERT INTO recipe_ingredient(id, amount, ingredient_id) VALUES (420,15, 87);
+INSERT INTO recipe_ingredient_template(id, amount, type) VALUES (0, 15, 'LIQUEUR');
+INSERT INTO recipe_template(id, instructions) VALUES (0, 'Rub the rim of the glass with the lime slice to make the salt stick to it. Take care to moisten only the outer rim and sprinkle the salt on it. The salt should present to the lips of the imbiber and never mix into the cocktail. Shake the other ingredients with ice, then carefully pour into the glass.');
+INSERT INTO recipe_template_recipe_ingredient_templates(recipe_template_id, recipe_ingredient_templates_id) VALUES (0, 0);
+INSERT INTO recipe_template_recipe_ingredients(recipe_template_id, recipe_ingredients_id) VALUES (0, 418);
+INSERT INTO recipe_template_recipe_ingredients(recipe_template_id, recipe_ingredients_id) VALUES (0, 419);
+INSERT INTO recipe_template_recipe_ingredients(recipe_template_id, recipe_ingredients_id) VALUES (0, 420);
+INSERT INTO public.cocktail_template(id, glass, recipe_id, name)VALUES (0, 'MARGARITA_GLASS', 0, 'Margarita');

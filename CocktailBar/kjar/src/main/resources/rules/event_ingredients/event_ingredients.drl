@@ -1,0 +1,50 @@
+package rules.event_ingredients;
+
+import com.ftn.sbnz.model.event.*;
+import com.ftn.sbnz.model.preference.*
+import com.ftn.sbnz.model.cocktail.*
+import java.util.*;
+import java.util.stream.Collectors
+import com.ftn.sbnz.model.cocktail.RecipeIngredient;
+
+
+rule "CalculateNumberOfEachCocktail"
+salience(20)
+when
+    EventHours($hours:hours)
+    GuestAmount($guests: amount)
+then
+    int drinksPerPerson = (int)Math.ceil(((double) $hours)/2);
+    int totalDrinks = $guests * drinksPerPerson;
+    int numberOfEachCocktail = (int) Math.ceil(((double)totalDrinks / 10.0) * 1.5);
+    insert(new NumberOfEachCocktail(numberOfEachCocktail));
+end
+
+rule "AlterIngredients"
+salience(10)
+when
+    $recipeIngredient: RecipeIngredient()
+    NumberOfEachCocktail($numberOfEachCocktail: amount)
+    $ingredientDisplay: RecipeIngredient.RecipeIngredientDisplay(ingredient == $recipeIngredient.getIngredientName())
+then
+    delete($recipeIngredient);
+    modify($ingredientDisplay){setAmount($ingredientDisplay.getAmount() + ($recipeIngredient.getAmount() * $numberOfEachCocktail))}
+end
+
+rule "AddIngredients"
+salience(10)
+when
+    $recipeIngredient: RecipeIngredient()
+    NumberOfEachCocktail($numberOfEachCocktail: amount)
+    not(RecipeIngredient.RecipeIngredientDisplay(ingredient == $recipeIngredient.getIngredientName()))
+then
+    delete($recipeIngredient);
+    insert(new RecipeIngredient.RecipeIngredientDisplay($recipeIngredient, $recipeIngredient.getAmount() * $numberOfEachCocktail));
+end
+
+
+rule "AdjustAmounts"
+when $ingredientDisplay:RecipeIngredient.RecipeIngredientDisplay()
+then
+    modify($ingredientDisplay){setAmount(Math.ceil($ingredientDisplay.getAmount()/1000)*1000)}
+end

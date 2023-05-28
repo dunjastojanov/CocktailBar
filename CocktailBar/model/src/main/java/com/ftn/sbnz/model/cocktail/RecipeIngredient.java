@@ -28,6 +28,17 @@ public class RecipeIngredient {
     public Long getIngredientId() {
         return ingredient.getId();
     }
+    public String getIngredientName() {
+        return ingredient.getName();
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 
     @Data
     public static class RecipeIngredientDTO {
@@ -42,9 +53,23 @@ public class RecipeIngredient {
     }
 
     @Data
+
     public static class RecipeIngredientDisplay {
         private String ingredient;
         private double amount;
+
+        public RecipeIngredientDisplay() {
+        }
+
+        public RecipeIngredientDisplay(String ingredient, double amount) {
+            this.ingredient = ingredient;
+            this.amount = amount;
+        }
+
+        public RecipeIngredientDisplay(RecipeIngredient recipeIngredient, double amount) {
+            this.ingredient = recipeIngredient.getIngredient().getName();
+            this.amount = amount;
+        }
 
         public RecipeIngredientDisplay(RecipeIngredient recipeIngredient) {
             ingredient = recipeIngredient.getIngredient().getName();

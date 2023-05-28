@@ -11,6 +11,7 @@ public class EventPreferences {
     int maleGuestAmount;
     int femaleGuestAmount;
     int eventHours;
+    EventType eventType;
 
     public int getGuestAmount() {
         return maleGuestAmount + femaleGuestAmount;

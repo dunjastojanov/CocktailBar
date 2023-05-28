@@ -3,8 +3,16 @@
         <ksession name="cocktailRecommendationKSession" type="stateful"/>
     </kbase>
 
+    <kbase name="cocktailTemplateKBase" packages="cocktail_template">
+        <ksession name="cocktailTemplateKSession"/>
+    </kbase>
+
     <kbase name="eventPlanningKBase" packages="event">
         <ksession name="eventPlanningKSession" type="stateful"/>
+    </kbase>
+
+    <kbase name="eventTemplateKBase" packages="event_template">
+        <ksession name="eventTemplateKSession"/>
     </kbase>
 
     <kbase name="inventoryTrackingKBase" eventProcessingMode="stream" packages="inventory">
@@ -13,6 +21,10 @@
 
     <kbase name="menuUpdateKBase" packages="menu">
         <ksession name="menuUpdateKSession" type="stateful"/>
+    </kbase>
+
+    <kbase name="eventIngredientsKBase" packages="event_ingredients">
+        <ksession name="eventIngredientsKSession" type="stateful"/>
     </kbase>
 
 </kmodule>

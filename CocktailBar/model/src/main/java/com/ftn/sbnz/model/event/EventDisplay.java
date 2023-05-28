@@ -17,10 +17,9 @@ public class EventDisplay {
     private List<RecipeIngredient.RecipeIngredientDisplay> ingredients = new ArrayList<>();
     private List<Cocktail.CocktailDisplayDTO> cocktails = new ArrayList<>();
 
-    public EventDisplay(List<RecipeIngredient> recipeIngredients, Set<Cocktail> menu) {
-        ingredients = recipeIngredients.stream().map(RecipeIngredient.RecipeIngredientDisplay::new).toList();
-        cocktails = menu.stream().map(Cocktail.CocktailDisplayDTO::new).toList();
+
+    public EventDisplay(Set<Cocktail> menu, List<RecipeIngredient.RecipeIngredientDisplay> ingredients) {
+        this.ingredients = ingredients;
+        this.cocktails = menu.stream().map(Cocktail.CocktailDisplayDTO::new).toList();
     }
-
-
 }

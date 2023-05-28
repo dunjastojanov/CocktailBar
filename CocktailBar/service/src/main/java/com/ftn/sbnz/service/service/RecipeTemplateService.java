@@ -38,7 +38,7 @@ public class RecipeTemplateService {
     private RecipeTemplate getRecipe(RecipeTemplate.RecipeTemplateDTO dto) {
         RecipeTemplate recipe = new RecipeTemplate();
         recipe.setRecipeIngredients(dto.getRecipeIngredients().stream().map(recipeIngredientId -> recipeIngredientService.getById(recipeIngredientId)).collect(Collectors.toSet()));
-        recipe.setRecipeIngredientTemplates(dto.getRecipeIngredientTemplates().stream().map(recipeIngredientId -> recipeIngredientTemplateService.getById(recipeIngredientId)).collect(Collectors.toSet()));
+        recipe.setRecipeIngredientTemplate(dto.getRecipeIngredientTemplate());
         recipe.setInstructions(dto.getInstructions());
         return recipe;
     }
@@ -46,7 +46,7 @@ public class RecipeTemplateService {
     public RecipeTemplate update(Long id, RecipeTemplate.RecipeTemplateDTO updatedRecipe) {
         RecipeTemplate recipe = getById(id);
         recipe.setRecipeIngredients(updatedRecipe.getRecipeIngredients().stream().map(recipeIngredientId -> recipeIngredientService.getById(recipeIngredientId)).collect(Collectors.toSet()));
-        recipe.setRecipeIngredientTemplates(updatedRecipe.getRecipeIngredientTemplates().stream().map(recipeIngredientId -> recipeIngredientTemplateService.getById(recipeIngredientId)).collect(Collectors.toSet()));
+        recipe.setRecipeIngredientTemplate(updatedRecipe.getRecipeIngredientTemplate());
         recipe.setInstructions(updatedRecipe.getInstructions());
         return recipeTemplateRepository.save(recipe);
     }
