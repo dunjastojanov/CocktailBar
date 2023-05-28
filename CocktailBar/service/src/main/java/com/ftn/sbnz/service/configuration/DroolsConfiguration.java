@@ -2,7 +2,9 @@ package com.ftn.sbnz.service.configuration;
 
 import com.ftn.sbnz.model.cocktail.Cocktail;
 import com.ftn.sbnz.model.cocktail.Ingredient;
+import com.ftn.sbnz.model.inventory.IngredientInventoryCEPEvent;
 import com.ftn.sbnz.service.repository.CocktailRepository;
+import com.ftn.sbnz.service.repository.IngredientInventoryRepository;
 import com.ftn.sbnz.service.repository.IngredientRepository;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieScanner;
