@@ -15,4 +15,8 @@ public class PreferableCocktailList {
         cocktails.add(cocktail);
     }
 
+    public boolean containsCocktail(Cocktail cocktail) {
+        return cocktails.contains(cocktail);
+    }
+
 }

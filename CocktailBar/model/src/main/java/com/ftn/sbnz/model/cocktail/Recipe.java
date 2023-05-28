@@ -48,7 +48,12 @@ public class Recipe {
         return recipeIngredients.stream().map(RecipeIngredient::getIngredient).toList();
     }
 
-
+    public boolean isMadeOfIngredients(Set<Ingredient> ingredients) {
+        return ingredients.containsAll(
+                recipeIngredients.stream().map(
+                        RecipeIngredient::getIngredient
+                ).toList());
+    }
 
     @Data
     public static class RecipeDTO {
