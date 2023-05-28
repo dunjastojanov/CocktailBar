@@ -42,15 +42,13 @@ public class DroolsConfiguration {
         kScanner.start(1000);
 
         KieSession cocktailRecommendationKSession = kieContainer.newKieSession("cocktailRecommendationKSession");
+        addCocktailsToSession(cocktailRecommendationKSession);
+        addIngredientsToSession(cocktailRecommendationKSession);
+        sessions.put("cocktail_recommendation", cocktailRecommendationKSession);
 
-
-        for (Cocktail cocktail : cocktailRepository.findAll()) {
-            cocktailRecommendationKSession.insert(cocktail);
-        }
-
-        for (Ingredient ingredient : ingredientRepository.findAll()) {
-            cocktailRecommendationKSession.insert(ingredient);
-        }
+        KieSession eventPlanningKSession = kieContainer.newKieSession("eventPlanningKSession");
+        addCocktailsToSession(eventPlanningKSession);
+        sessions.put("event_planning", eventPlanningKSession);
 
         KieSession inventoryTrackingSession = kieContainer.newKieSession("inventoryTrackingKSession");
 
@@ -60,13 +58,22 @@ public class DroolsConfiguration {
             inserted.setTime(inserted.getTime()-1000*60*15);
             inventoryTrackingSession.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
         });
-
-        sessions.put("cocktail_recommendation", cocktailRecommendationKSession);
-        sessions.put("event_planning", kieContainer.newKieSession("eventPlanningKSession"));
         sessions.put("inventory_tracking", inventoryTrackingSession);
         sessions.put("menu_update", kieContainer.newKieSession("menuUpdateKSession"));
 
         return sessions;
+    }
+
+    private void addIngredientsToSession(KieSession cocktailRecommendationKSession) {
+        for (Ingredient ingredient: ingredientRepository.findAll()) {
+            cocktailRecommendationKSession.insert(ingredient);
+        }
+    }
+
+    private void addCocktailsToSession(KieSession cocktailRecommendationKSession) {
+        for (Cocktail cocktail: cocktailRepository.findAll()){
+            cocktailRecommendationKSession.insert(cocktail);
+        }
     }
 }
 

@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GuestAmount {
-    private Long eventId;
-    private int amount;
+public class NumberOfEachCocktail {
 
+    int amount;
 }

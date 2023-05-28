@@ -1,11 +1,15 @@
 package com.ftn.sbnz.model.cocktail;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RecipeIngredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +21,10 @@ public class RecipeIngredient {
 
     private double amount;
 
+    public RecipeIngredient(Ingredient ingredient, double amount) {
+        this.ingredient = ingredient;
+        this.amount = amount;
+    }
     public Long getIngredientId() {
         return ingredient.getId();
     }
@@ -28,6 +36,18 @@ public class RecipeIngredient {
 
         public RecipeIngredientDTO(RecipeIngredient recipeIngredient) {
             ingredientId = recipeIngredient.getIngredientId();
+            amount = recipeIngredient.getAmount();
+        }
+
+    }
+
+    @Data
+    public static class RecipeIngredientDisplay {
+        private String ingredient;
+        private double amount;
+
+        public RecipeIngredientDisplay(RecipeIngredient recipeIngredient) {
+            ingredient = recipeIngredient.getIngredient().getName();
             amount = recipeIngredient.getAmount();
         }
 

@@ -7,8 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GuestAmount {
-    private Long eventId;
-    private int amount;
+public class EventHours {
+    Long eventId;
+    int hours;
 
+    public EventHours(int hours) {
+        this.hours = hours;
+    }
 }
