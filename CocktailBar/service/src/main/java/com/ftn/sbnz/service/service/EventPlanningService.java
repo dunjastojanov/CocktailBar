@@ -119,9 +119,9 @@ public class EventPlanningService {
             list.add(new GlassPreferenceCount(eventType, Glass.SHOT_GLASS, 2));
             list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 3));
             list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 3));
-            list.add(new GlassPreferenceCount(eventType, Glass.OLD_FASHIONED_GLASS, 2));
+            list.add(new GlassPreferenceCount(eventType, Glass.WHISKEY_GLASS, 2));
         } else if (eventType == EventType.BUSINESS) {
-            list.add(new GlassPreferenceCount(eventType, Glass.OLD_FASHIONED_GLASS, 4));
+            list.add(new GlassPreferenceCount(eventType, Glass.WHISKEY_GLASS, 4));
             list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 4));
             list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 2));
         } else if (eventType == EventType.BACHELOR_PARTY || eventType == EventType.BACHELORETTE_PARTY) {
