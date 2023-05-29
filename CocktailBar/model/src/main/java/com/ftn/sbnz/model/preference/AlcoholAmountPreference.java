@@ -1,11 +1,9 @@
 package com.ftn.sbnz.model.preference;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class AlcoholAmountPreference implements Preference {
     private Long referenceId;
@@ -34,5 +32,10 @@ public class AlcoholAmountPreference implements Preference {
         this.alcoholStrength = AlcoholStrength.valueOf(alcoholStrength);
     }
 
+
+    public AlcoholAmountPreference(Long referenceId, AlcoholStrength alcoholStrength) {
+        this.referenceId = referenceId;
+        this.alcoholStrength = alcoholStrength;
+    }
 
 }

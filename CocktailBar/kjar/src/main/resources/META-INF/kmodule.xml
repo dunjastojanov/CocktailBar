@@ -19,7 +19,7 @@
         <ksession name="inventoryTrackingKSession" type="stateful"/>
     </kbase>
 
-    <kbase name="menuUpdateKBase" packages="menu">
+    <kbase name="menuUpdateKBase" packages="menu" eventProcessingMode="stream">
         <ksession name="menuUpdateKSession" type="stateful"/>
     </kbase>
 

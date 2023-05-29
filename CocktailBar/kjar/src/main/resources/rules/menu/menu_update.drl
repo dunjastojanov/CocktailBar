@@ -1,0 +1,90 @@
+package rules.menu;
+import com.ftn.sbnz.model.inventory.*;
+import com.ftn.sbnz.model.cocktail.*;
+import com.ftn.sbnz.model.preference.*;
+
+import org.drools.core.spi.KnowledgeHelper;
+import java.util.*;
+
+
+rule "GetOrdersInLastFifteenMinutes"
+when
+    $cocktails: List() from accumulate(
+        OrderEvent($cocktail: cocktail) over window: time(15m),
+        collectList($cocktail)
+    )
+then
+    CocktailListWrapper c=new CocktailListWrapper($cocktails);
+    c.cocktailNumWithAlcoholStrength();
+    insert(c);
+end
+
+
+rule "AddFirstStrongCocktail"
+when
+    CocktailListWrapper($numOfStrongCocktails: getStrongCocktailsNumber())
+    not( AlcoholAmountPreference(isStrong()))
+    eval($numOfStrongCocktails>0)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.STRONG));
+end
+
+
+rule "AddOtherStrongCocktailPreference"
+when
+    CocktailListWrapper($numOfStrongCocktails: getStrongCocktailsNumber())
+    $count: Long() from accumulate(
+            AlcoholAmountPreference(isStrong()),
+            count(1)
+        )
+    eval($count<$numOfStrongCocktails)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.STRONG));
+end
+
+
+rule "AddFirstLightCocktail"
+when
+    CocktailListWrapper($numOfLightCocktails: getLightCocktailsNumber())
+    not(AlcoholAmountPreference(isLight()))
+    eval($numOfLightCocktails>0)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.LIGHT));
+end
+
+
+rule "AddOtherLightCocktailPreference"
+when
+    CocktailListWrapper($numOfLightCocktails: getLightCocktailsNumber())
+    $count: Long() from accumulate(
+            AlcoholAmountPreference(isLight()),
+            count(1)
+        )
+    eval($count<$numOfLightCocktails)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.LIGHT));
+end
+
+
+
+rule "AddMediumLightCocktail"
+when
+    CocktailListWrapper($numOfMediumCocktails: getMediumCocktailsNumber())
+    not(AlcoholAmountPreference(isMedium()))
+    eval($numOfMediumCocktails > 0)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.MEDIUM));
+end
+
+
+rule "AddOtherMediumCocktailPreference"
+when
+    CocktailListWrapper($numOfMediumCocktails: getMediumCocktailsNumber())
+    $count: Long() from accumulate(
+            AlcoholAmountPreference(isMedium()),
+            count(1)
+        )
+    eval($count < $numOfMediumCocktails)
+then
+    insert(new AlcoholAmountPreference(0L, AlcoholStrength.MEDIUM));
+end
