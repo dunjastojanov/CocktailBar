@@ -33,6 +33,14 @@ public class Ingredient {
         return name;
     }
 
+    public boolean isParentOf(Ingredient ingredient) {
+        if (recipe == null) {
+            return false;
+        }
+        return recipe.containsIngredient(ingredient);
+
+    }
+
     @Data
     public static class IngredientDTO {
         private String name;

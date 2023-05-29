@@ -49,10 +49,11 @@ public class Recipe {
     }
 
     public boolean isMadeOfIngredients(Set<Ingredient> ingredients) {
-        return ingredients.containsAll(
-                recipeIngredients.stream().map(
-                        RecipeIngredient::getIngredient
-                ).toList());
+        return ingredients.containsAll(getIngredients());
+    }
+
+    public boolean containsIngredient(Ingredient ingredient) {
+        return getIngredients().contains(ingredient);
     }
 
     @Data

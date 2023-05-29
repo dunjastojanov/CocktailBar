@@ -8,6 +8,13 @@ import java.util.stream.Collectors;
 
 import org.drools.core.spi.KnowledgeHelper;
 
+
+declare Hierarchy
+    parent: Long @position(0)
+    child: Long @position(1)
+end
+
+
 rule "AccumulateFlavors"
 salience(30)
 when
@@ -23,6 +30,7 @@ then
   insert(tasteProfile);
   System.out.println("Accumulated flavors.");
 end
+
 
 rule "AccumulateIngredientsByFlavor"
 salience(25)
@@ -40,6 +48,37 @@ then
   insert(preferableIngredientList);
   System.out.println("Accumulated ingredients.");
 end
+
+
+rule "CreateHierachy"
+salience(20)
+when
+    $i:Ingredient($id2: id)
+    Ingredient(isParentOf($i), $id1: id)
+then
+    insert(new Hierarchy($id1, $id2));
+end
+
+
+query isParentOf(Long parentId, Long childId)
+    Hierarchy(parentId, childId;)
+    or (Hierarchy(parentId, middleId;) and isParentOf(middleId, childId;))
+end
+
+
+rule "AddIngredientParents"
+salience(20)
+when
+    $p:PreferableIngredientList($ingredients: ingredients)
+    $i1: Ingredient($id1: id)
+    Ingredient($id2: id) from $ingredients
+    isParentOf($id1, $id2;)
+then
+    modify($p){
+        addIngredient($i1)
+    }
+end
+
 
 rule "InsertPreferableCocktailList"
 salience(20)

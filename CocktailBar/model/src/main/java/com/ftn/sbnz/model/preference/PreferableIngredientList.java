@@ -15,4 +15,8 @@ public class PreferableIngredientList {
         return ingredients.contains(ingredient);
     }
 
+    public void addIngredient(Ingredient ingredient){
+        ingredients.add(ingredient);
+    }
+
 }
