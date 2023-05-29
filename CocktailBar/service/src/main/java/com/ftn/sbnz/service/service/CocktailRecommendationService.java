@@ -31,7 +31,7 @@ public class CocktailRecommendationService {
             kieSession.insert(new AlcoholAmountPreference(userId, tastePreference.getAlcoholStrength().name()));
             kieSession.insert(userService.getUser(userId));
 
-            for (Flavor flavor: tastePreference.getFlavors()) {
+            for (Flavor flavor : tastePreference.getFlavors()) {
                 kieSession.insert(new FlavorPreference(userId, flavor));
             }
 
@@ -45,9 +45,15 @@ public class CocktailRecommendationService {
                     .orElse(null);
 
             removeObjectsFromSession(kieSession, objects);
-            if (preferableCocktailList != null)
-                return preferableCocktailList.getCocktails().stream().map(Cocktail.CocktailDisplayDTO::new).collect(Collectors.toList());
-            else throw new EntityNotFoundException("There are no cocktails with given parameters.");
+            if (preferableCocktailList == null)
+                throw new EntityNotFoundException("There are no cocktails with given parameters.");
+
+            List<Cocktail.CocktailDisplayDTO> cocktails = preferableCocktailList.getCocktails().stream().map(Cocktail.CocktailDisplayDTO::new).collect(Collectors.toList());
+
+            if (cocktails.size() == 0)
+                throw new EntityNotFoundException("There are no cocktails with given parameters.");
+
+            return cocktails;
         } else {
             throw new RuntimeException("Session is null.");
         }

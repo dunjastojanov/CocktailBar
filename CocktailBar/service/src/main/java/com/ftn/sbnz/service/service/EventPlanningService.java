@@ -1,24 +1,20 @@
 package com.ftn.sbnz.service.service;
 
 import com.ftn.sbnz.model.cocktail.Cocktail;
-import com.ftn.sbnz.model.cocktail.Glass;
 import com.ftn.sbnz.model.cocktail.Ingredient;
 import com.ftn.sbnz.model.cocktail.RecipeIngredient;
 import com.ftn.sbnz.model.event.*;
-import com.ftn.sbnz.model.preference.GlassPreference;
-import com.ftn.sbnz.service.configuration.DroolsConfiguration;
-import org.drools.template.ObjectDataCompiler;
+import com.ftn.sbnz.service.repository.EventRepository;
 import org.kie.api.KieServices;
-import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
-import org.kie.internal.utils.KieHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +23,12 @@ public class EventPlanningService {
 
     @Autowired
     private Map<String, KieSession> kieSessions;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private EventService eventService;
 
     public EventDisplay planEvent(Long id, EventPreferences eventPreferences) {
         Event event = calculateEventMenu(id, eventPreferences);
@@ -41,8 +43,8 @@ public class EventPlanningService {
             kieSession.insert(new MaleGuestAmount(id, eventPreferences.getMaleGuestAmount()));
             kieSession.insert(new FemaleGuestAmount(id, eventPreferences.getFemaleGuestAmount()));
             kieSession.insert(new EventIngredientList(new ArrayList<>()));
-            kieSession.insert(getEvent(id));
-            addGlassPreference(eventPreferences.getEventType(), kieSession);
+            kieSession.insert(eventService.getEvent(id));
+            eventService.addGlassPreference(eventPreferences.getEventType(), kieSession);
 
             kieSession.fireAllRules();
 
@@ -56,7 +58,11 @@ public class EventPlanningService {
 
             removeObjectsFromSession(kieSession, objects);
 
-            return event;
+            if (event == null) {
+                throw new RuntimeException("Event menu cannot be calculated");
+            }
+            event.setType(eventPreferences.getEventType());
+            return eventRepository.save(event);
 
         } else {
             throw new RuntimeException("Session is null.");
@@ -88,49 +94,6 @@ public class EventPlanningService {
         }
     }
 
-    private static Event getEvent(Long id) {
-        return new Event(id, new HashSet<>(), EventType.BIRTHDAY, LocalDateTime.now());
-    }
-
-    public void addGlassPreference(EventType eventType, KieSession session) {
-        InputStream inputStream = DroolsConfiguration.class.getResourceAsStream("/rules/event_template/event_template.drt");
-        List<Object> list = getGlassPreferenceCounts(eventType);
-
-        ObjectDataCompiler objectDataCompiler = new ObjectDataCompiler();
-        String drl = objectDataCompiler.compile(list, inputStream);
-
-        KieHelper kieHelper = new KieHelper();
-        kieHelper.addContent(drl, ResourceType.DRL);
-        KieSession kieSession = kieHelper.build().newKieSession();
-        kieSession.fireAllRules();
-        kieSession.getObjects().stream()
-                .filter(o -> o instanceof GlassPreference)
-                .forEach(session::insert);
-    }
-
-    private static List<Object> getGlassPreferenceCounts(EventType eventType) {
-        List<Object> list = new ArrayList<>();
-
-        if (eventType == EventType.BIRTHDAY) {
-            list.add(new GlassPreferenceCount(eventType, Glass.SHOT_GLASS, 4));
-            list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 4));
-            list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 2));
-        } else if (eventType == EventType.WEDDING) {
-            list.add(new GlassPreferenceCount(eventType, Glass.SHOT_GLASS, 2));
-            list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 3));
-            list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 3));
-            list.add(new GlassPreferenceCount(eventType, Glass.WHISKEY_GLASS, 2));
-        } else if (eventType == EventType.BUSINESS) {
-            list.add(new GlassPreferenceCount(eventType, Glass.WHISKEY_GLASS, 4));
-            list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 4));
-            list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 2));
-        } else if (eventType == EventType.BACHELOR_PARTY || eventType == EventType.BACHELORETTE_PARTY) {
-            list.add(new GlassPreferenceCount(eventType, Glass.SHOT_GLASS, 6));
-            list.add(new GlassPreferenceCount(eventType, Glass.COLLINS_GLASS, 2));
-            list.add(new GlassPreferenceCount(eventType, Glass.MARTINI_GLASS, 2));
-        }
-        return list;
-    }
 
     private static void removeObjectsFromSession(KieSession kieSession, Collection<?> objects) {
         for (Object object : objects) {

@@ -38,4 +38,8 @@ public class AlcoholAmountPreference implements Preference {
         this.alcoholStrength = alcoholStrength;
     }
 
+    public AlcoholAmountPreference(AlcoholStrength alcoholStrength) {
+        this.alcoholStrength = alcoholStrength;
+    }
+
 }

@@ -3,7 +3,6 @@ package com.ftn.sbnz.model.event;
 import com.ftn.sbnz.model.cocktail.Cocktail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -12,7 +11,6 @@ import java.util.Set;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class Event {
     @Id
@@ -26,6 +24,11 @@ public class Event {
     private EventType type;
 
     private LocalDateTime updateTime;
+
+    public Event() {
+        menu = new HashSet<>();
+        updateTime = LocalDateTime.now();
+    }
 
     public Event(Event other) {
         this.id = other.id;

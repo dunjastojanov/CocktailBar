@@ -64,17 +64,23 @@ public class DroolsConfiguration {
         sessions.put("event_planning", eventPlanningKSession);
 
         KieSession inventoryTrackingSession = kieContainer.newKieSession("inventoryTrackingKSession");
+        addIngredientInventoryCEP(inventoryTrackingSession);
+        sessions.put("inventory_tracking", inventoryTrackingSession);
 
+        KieSession menuUpdateKSession = kieContainer.newKieSession("menuUpdateKSession");
+        addCocktailsToSession(menuUpdateKSession);
+        sessions.put("menu_update", menuUpdateKSession);
+
+        return sessions;
+    }
+
+    private void addIngredientInventoryCEP(KieSession session) {
         ingredientInventoryRepository.findAll().forEach(ingredientInventory -> {
             Date inserted=new Date();
             inserted.setTime(System.currentTimeMillis());
             inserted.setTime(inserted.getTime()-1000*60*15);
-            inventoryTrackingSession.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
+            session.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
         });
-        sessions.put("inventory_tracking", inventoryTrackingSession);
-        sessions.put("menu_update", kieContainer.newKieSession("menuUpdateKSession"));
-
-        return sessions;
     }
 
     private void addIngredientsToSession(KieSession session) {
