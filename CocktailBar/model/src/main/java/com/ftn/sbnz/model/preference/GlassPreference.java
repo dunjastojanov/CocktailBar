@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GlassPreference implements Preference {
-    private Long referenceId;
     private Glass glass;
 
     public GlassPreference (String glass) {

@@ -4,7 +4,6 @@ import com.ftn.sbnz.model.cocktail.Cocktail;
 import com.ftn.sbnz.model.cocktail.Ingredient;
 import com.ftn.sbnz.model.cocktail.RecipeIngredient;
 import com.ftn.sbnz.model.event.*;
-import com.ftn.sbnz.service.repository.EventRepository;
 import org.kie.api.KieServices;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -25,25 +24,23 @@ public class EventPlanningService {
     private Map<String, KieSession> kieSessions;
 
     @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
     private EventService eventService;
 
-    public EventDisplay planEvent(Long id, EventPreferences eventPreferences) {
-        Event event = calculateEventMenu(id, eventPreferences);
-        return new EventDisplay(event.getMenu(), calculateIngredients(eventPreferences, event));
+    public EventDisplay planEvent(EventPreferences eventPreferences) {
+        Event event = calculateEventMenu(eventPreferences);
+        return new EventDisplay(event.getMenu(), calculateIngredients(eventPreferences, event), eventPreferences.getEventType());
     }
 
-    private Event calculateEventMenu(Long id, EventPreferences eventPreferences) {
+    private Event calculateEventMenu(EventPreferences eventPreferences) {
         KieSession kieSession = kieSessions.get("event_planning");
+
         if (kieSession != null) {
             kieSession.insert(new EventHours(eventPreferences.getEventHours()));
             kieSession.insert(new GuestAmount(eventPreferences.getGuestAmount()));
-            kieSession.insert(new MaleGuestAmount(id, eventPreferences.getMaleGuestAmount()));
-            kieSession.insert(new FemaleGuestAmount(id, eventPreferences.getFemaleGuestAmount()));
+            kieSession.insert(new MaleGuestAmount(eventPreferences.getMaleGuestAmount()));
+            kieSession.insert(new FemaleGuestAmount(eventPreferences.getFemaleGuestAmount()));
             kieSession.insert(new EventIngredientList(new ArrayList<>()));
-            kieSession.insert(eventService.getEvent(id));
+            kieSession.insert(new Event());
             eventService.addGlassPreference(eventPreferences.getEventType(), kieSession);
 
             kieSession.fireAllRules();
@@ -59,10 +56,15 @@ public class EventPlanningService {
             removeObjectsFromSession(kieSession, objects);
 
             if (event == null) {
-                throw new RuntimeException("Event menu cannot be calculated");
+                throw new RuntimeException("Event menu cannot be calculated.");
             }
+
+            if (event.getMenu().size() == 0) {
+                throw new RuntimeException("Event menu cannot be calculated.");
+            }
+
             event.setType(eventPreferences.getEventType());
-            return eventRepository.save(event);
+            return event;
 
         } else {
             throw new RuntimeException("Session is null.");

@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class AlcoholAmountPreference implements Preference {
-    private Long referenceId;
     private AlcoholStrength alcoholStrength;
 
     public boolean isStrong() {
@@ -24,18 +23,11 @@ public class AlcoholAmountPreference implements Preference {
     }
 
     public AlcoholAmountPreference(Long referenceId, String alcoholStrength) {
-        this.referenceId = referenceId;
         this.alcoholStrength = AlcoholStrength.valueOf(alcoholStrength);
     }
 
     public AlcoholAmountPreference(String alcoholStrength) {
         this.alcoholStrength = AlcoholStrength.valueOf(alcoholStrength);
-    }
-
-
-    public AlcoholAmountPreference(Long referenceId, AlcoholStrength alcoholStrength) {
-        this.referenceId = referenceId;
-        this.alcoholStrength = alcoholStrength;
     }
 
     public AlcoholAmountPreference(AlcoholStrength alcoholStrength) {

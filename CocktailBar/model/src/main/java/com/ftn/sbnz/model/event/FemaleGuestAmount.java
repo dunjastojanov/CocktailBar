@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class FemaleGuestAmount {
-    private Long eventId;
     private int amount;
 
 }

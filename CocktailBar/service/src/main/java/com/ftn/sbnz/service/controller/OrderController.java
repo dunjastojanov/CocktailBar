@@ -1,6 +1,7 @@
 package com.ftn.sbnz.service.controller;
 
 import com.ftn.sbnz.model.event.EventDisplay;
+import com.ftn.sbnz.model.event.EventType;
 import com.ftn.sbnz.service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,7 @@ public class OrderController {
     private OrderService orderService;
 
     @GetMapping
-    private EventDisplay makeOrder(@RequestParam String cocktailName, @RequestParam(required = false) Long eventId){
-        return orderService.makeOrder(cocktailName, eventId);
+    private EventDisplay makeOrder(@RequestParam String cocktailName, @RequestParam(required = false) EventType eventType){
+        return orderService.makeOrder(cocktailName, eventType);
     }
 }

@@ -20,10 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -76,9 +73,9 @@ public class DroolsConfiguration {
 
     private void addIngredientInventoryCEP(KieSession session) {
         ingredientInventoryRepository.findAll().forEach(ingredientInventory -> {
-            Date inserted=new Date();
+            Date inserted = new Date();
             inserted.setTime(System.currentTimeMillis());
-            inserted.setTime(inserted.getTime()-1000*60*15);
+            inserted.setTime(inserted.getTime() - 1000 * 60 * 15);
             session.insert(new IngredientInventoryCEPEvent(inserted, ingredientInventory.getIngredient().getId(), ingredientInventory.getAmount(), ingredientInventory.getId()));
         });
     }
@@ -90,7 +87,11 @@ public class DroolsConfiguration {
     }
 
     private void addCocktailsToSession(KieSession session) {
-        for (Cocktail cocktail : cocktailRepository.findAll()) {
+        List<Cocktail> cocktails = (List<Cocktail>) cocktailRepository.findAll();
+        cocktails.sort(Comparator.comparing(Cocktail::getGlass).thenComparing(Cocktail::getAlcoholStrength));
+        for (Cocktail cocktail : cocktails) {
+            String flavors = cocktail.getIngredients().stream().map(ingredient -> ingredient.getFlavor().name()).collect(Collectors.toSet()).stream().sorted().collect(Collectors.joining(", "));
+            System.out.println(cocktail.getGlass() + "-" + cocktail.getAlcoholStrength() + "-[" + flavors + "]");
             session.insert(cocktail);
         }
     }
@@ -108,7 +109,7 @@ public class DroolsConfiguration {
         kieHelper.addContent(drl, ResourceType.DRL);
         KieSession kieSession = kieHelper.build().newKieSession();
 
-        for (CocktailTemplate cocktailTemplate: templates) {
+        for (CocktailTemplate cocktailTemplate : templates) {
             kieSession.insert(cocktailTemplate);
         }
 

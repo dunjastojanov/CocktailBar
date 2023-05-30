@@ -4,14 +4,15 @@ import com.ftn.sbnz.model.cocktail.Cocktail;
 import com.ftn.sbnz.model.cocktail.OrderEvent;
 import com.ftn.sbnz.model.event.Event;
 import com.ftn.sbnz.model.event.EventDisplay;
+import com.ftn.sbnz.model.event.EventType;
 import com.ftn.sbnz.model.inventory.IngredientInventoryCEPEvent;
 import com.ftn.sbnz.model.inventory.LowIngredientAlarm;
-import com.ftn.sbnz.service.repository.EventRepository;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -27,18 +28,19 @@ public class OrderService {
 
     @Autowired
     private IngredientInventoryService ingredientInventoryService;
-    @Autowired
-    private EventRepository eventRepository;
 
 
-    public EventDisplay makeOrder(String cocktailName, Long eventId) {
+    public EventDisplay makeOrder(String cocktailName, EventType eventType) {
         Cocktail cocktail = cocktailService.getCocktailByName(cocktailName);
+        EventDisplay eventDisplay = new EventDisplay();
         List<LowIngredientAlarm> alarms = updateInventory(cocktail);
-        if (eventId == null) {
-            return null;
+        eventDisplay.setAlarms(alarms);
+        if (eventType != null) {
+            Event event = updateMenu(cocktail, eventType);
+            eventDisplay.setCocktails(event.getMenu().stream().map(Cocktail.CocktailDisplayDTO::new).collect(Collectors.toList()));
         }
-        Event event = updateMenu(cocktail, eventId);
-        return new EventDisplay(alarms, event.getMenu());
+        eventDisplay.setEventType(eventType);
+        return eventDisplay;
     }
 
     public List<LowIngredientAlarm> updateInventory(Cocktail cocktail) {
@@ -51,8 +53,10 @@ public class OrderService {
             for (Object object : objects) {
                 if (object instanceof IngredientInventoryCEPEvent) {
                     ingredientInventoryService.updateIngredientInventory((IngredientInventoryCEPEvent) object);
+                    inventoryKieSession.delete(inventoryKieSession.getFactHandle(object));
                 } else if (object instanceof LowIngredientAlarm) {
                     lowIngredientAlarms.add((LowIngredientAlarm) object);
+                    inventoryKieSession.delete(inventoryKieSession.getFactHandle(object));
                 }
             }
 
@@ -62,9 +66,10 @@ public class OrderService {
         }
     }
 
-    public Event updateMenu(Cocktail cocktail, Long eventId) {
+    public Event updateMenu(Cocktail cocktail, EventType eventType) {
 
-        Event event = eventService.getEvent(eventId);
+        Event event = new Event();
+        event.setType(eventType);
         event.setMenu(new HashSet<>());
         KieSession menuUpdateKieSession = kieSessions.get("menu_update");
 
@@ -85,7 +90,7 @@ public class OrderService {
                 throw new RuntimeException("Cannot update menu.");
             }
 
-            return eventRepository.save(optional.get());
+            return optional.get();
         } else {
             throw new RuntimeException("KieSession is null");
         }

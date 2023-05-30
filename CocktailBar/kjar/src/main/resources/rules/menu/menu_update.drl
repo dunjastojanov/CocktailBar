@@ -9,7 +9,7 @@ import java.util.*;
 
 
 rule "GetOrdersInLastFifteenMinutes"
-salience(10)
+salience(30)
 when
     $cocktails: List() from accumulate(
         OrderEvent($cocktail: cocktail) over window: time(15m),
@@ -23,7 +23,7 @@ end
 
 
 rule "AddFirstStrongPreference"
-salience(10)
+salience(20)
 when
     CocktailListWrapper($numOfStrongCocktails: getStrongCocktailsNumber())
     not( AlcoholAmountPreference(isStrong()))
@@ -34,7 +34,7 @@ end
 
 
 rule "AddOtherStrongPreference"
-salience(10)
+salience(15)
 when
     CocktailListWrapper($numOfStrongCocktails: getStrongCocktailsNumber())
     $count: Long() from accumulate(
@@ -48,7 +48,7 @@ end
 
 
 rule "AddFirstLightPreference"
-salience(10)
+salience(20)
 when
     CocktailListWrapper($numOfLightCocktails: getLightCocktailsNumber())
     not(AlcoholAmountPreference(isLight()))
@@ -59,7 +59,7 @@ end
 
 
 rule "AddOtherLightPreference"
-salience(10)
+salience(15)
 when
     CocktailListWrapper($numOfLightCocktails: getLightCocktailsNumber())
     $count: Long() from accumulate(
@@ -74,7 +74,7 @@ end
 
 
 rule "AddFirstMediumPreference"
-salience(10)
+salience(20)
 when
     CocktailListWrapper($numOfMediumCocktails: getMediumCocktailsNumber())
     not(AlcoholAmountPreference(isMedium()))
@@ -85,7 +85,7 @@ end
 
 
 rule "AddOtherMediumPreference"
-salience(10)
+salience(15)
 when
     CocktailListWrapper($numOfMediumCocktails: getMediumCocktailsNumber())
     $count: Long() from accumulate(

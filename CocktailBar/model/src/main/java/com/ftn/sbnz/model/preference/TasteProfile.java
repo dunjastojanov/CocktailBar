@@ -8,6 +8,5 @@ import java.util.Set;
 
 @Data
 public class TasteProfile {
-    private Long referenceId;
     private Set<Flavor> flavors = new HashSet<>();
 }

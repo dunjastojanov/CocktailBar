@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class EventTypePreference {
-    private Long eventId;
     private EventType eventType;
 }

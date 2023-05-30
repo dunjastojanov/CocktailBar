@@ -23,16 +23,16 @@ public class CocktailRecommendationService {
     @Autowired
     private UserService userService;
 
-    public List<Cocktail.CocktailDisplayDTO> recommendCocktail(Long userId, TastePreference tastePreference) {
+    public List<Cocktail.CocktailDisplayDTO> recommendCocktail(TastePreference tastePreference) {
 
         KieSession kieSession = kieSessions.get("cocktail_recommendation");
         if (kieSession != null) {
-            kieSession.insert(new GlassPreference(userId, tastePreference.getGlass()));
-            kieSession.insert(new AlcoholAmountPreference(userId, tastePreference.getAlcoholStrength().name()));
-            kieSession.insert(userService.getUser(userId));
+            kieSession.insert(new GlassPreference(tastePreference.getGlass()));
+            kieSession.insert(new AlcoholAmountPreference(tastePreference.getAlcoholStrength().name()));
+
 
             for (Flavor flavor : tastePreference.getFlavors()) {
-                kieSession.insert(new FlavorPreference(userId, flavor));
+                kieSession.insert(new FlavorPreference(flavor));
             }
 
             kieSession.fireAllRules();

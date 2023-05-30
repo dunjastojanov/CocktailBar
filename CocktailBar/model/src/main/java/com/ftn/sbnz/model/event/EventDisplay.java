@@ -18,11 +18,13 @@ public class EventDisplay {
     private List<RecipeIngredient.RecipeIngredientDisplay> ingredients = new ArrayList<>();
     private List<Cocktail.CocktailDisplayDTO> cocktails = new ArrayList<>();
     private List<LowIngredientAlarm> alarms = new ArrayList<>();
+    private EventType eventType;
 
 
-    public EventDisplay(Set<Cocktail> menu, List<RecipeIngredient.RecipeIngredientDisplay> ingredients) {
+    public EventDisplay(Set<Cocktail> menu, List<RecipeIngredient.RecipeIngredientDisplay> ingredients, EventType eventType) {
         this.ingredients = ingredients;
         this.cocktails = menu.stream().map(Cocktail.CocktailDisplayDTO::new).toList();
+        this.eventType = eventType;
     }
 
     public EventDisplay (List<LowIngredientAlarm> alarms, Set<Cocktail>menu) {

@@ -26,7 +26,7 @@ when
     FemaleGuestAmount($females: amount)
 then
     int amountOfDrinks = (int)((double)$females / (double)$guests * 10);
-    insert(new AlcoholAmountPreferenceCount( "LIGHT", amountOfDrinks/2));
+    insert(new AlcoholAmountPreferenceCount("LIGHT", amountOfDrinks/2));
     insert(new AlcoholAmountPreferenceCount("MEDIUM", amountOfDrinks - amountOfDrinks/2));
 end
 

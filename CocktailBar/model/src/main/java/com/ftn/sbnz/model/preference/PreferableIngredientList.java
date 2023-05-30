@@ -8,7 +8,6 @@ import java.util.Set;
 
 @Data
 public class PreferableIngredientList {
-    private Long referenceId;
     private Set<Ingredient> ingredients = new HashSet<>();
 
     public boolean containsIngredient(Ingredient ingredient) {

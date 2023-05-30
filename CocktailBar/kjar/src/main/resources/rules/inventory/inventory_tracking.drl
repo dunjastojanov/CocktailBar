@@ -7,8 +7,8 @@ import org.drools.core.spi.KnowledgeHelper;
 rule "CreateIngredientAlteration"
 when
     $rI: RecipeIngredient(
-        $ingredientId: ingredient.getId(),
-        $ingredientName: ingredient.getName(),
+        $ingredientId: getIngredientId(),
+        $ingredientName: getIngredientName(),
         $ingredientAmount: amount
     )
 then
@@ -22,7 +22,6 @@ end
 
 
 rule "InventoryHasLessIngredientAmount"
-no-loop true
 when
     $ingredientAlteration: IngredientAlteration(
         $ingredientId: ingredientId,
@@ -32,7 +31,7 @@ when
     $inventoryIngredientEvent: IngredientInventoryCEPEvent(
         getIngredientInventoryId() == $ingredientId,
         $inventoryAmount: amount,
-        this after[10m] $ingredientAlteration
+        this before[10m] $ingredientAlteration
     )
     $amount: Double() from ($inventoryAmount - $ingredientAmount)
     eval($amount <= 0);
@@ -48,7 +47,6 @@ end
 
 
 rule "InventoryHasMoreIngredientAmount"
-no-loop true
 when
     $ingredientAlteration: IngredientAlteration(
         $ingredientId: ingredientId,

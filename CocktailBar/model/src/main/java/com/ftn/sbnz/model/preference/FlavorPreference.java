@@ -7,6 +7,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FlavorPreference implements Preference {
-    private Long referenceId;
     private Flavor flavor;
 }

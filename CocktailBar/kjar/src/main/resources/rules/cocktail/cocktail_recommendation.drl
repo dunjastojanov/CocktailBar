@@ -18,14 +18,12 @@ end
 rule "AccumulateFlavors"
 salience(30)
 when
-  $user: User($userId: id)
   $set: Set() from accumulate(
-    FlavorPreference($userId == referenceId, $flavor: flavor),
+    FlavorPreference($flavor: flavor),
     collectSet($flavor)
   )
 then
   TasteProfile tasteProfile = new TasteProfile();
-  tasteProfile.setReferenceId($userId);
   tasteProfile.setFlavors($set);
   insert(tasteProfile);
   System.out.println("Accumulated flavors.");
@@ -42,7 +40,6 @@ when
     )
 then
   PreferableIngredientList preferableIngredientList = new PreferableIngredientList();
-  preferableIngredientList.setReferenceId($tasteProfile.getReferenceId());
   preferableIngredientList.setIngredients($set);
 
   insert(preferableIngredientList);
