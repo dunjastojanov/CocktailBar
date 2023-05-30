@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -88,10 +91,7 @@ public class DroolsConfiguration {
 
     private void addCocktailsToSession(KieSession session) {
         List<Cocktail> cocktails = (List<Cocktail>) cocktailRepository.findAll();
-        cocktails.sort(Comparator.comparing(Cocktail::getGlass).thenComparing(Cocktail::getAlcoholStrength));
         for (Cocktail cocktail : cocktails) {
-            String flavors = cocktail.getIngredients().stream().map(ingredient -> ingredient.getFlavor().name()).collect(Collectors.toSet()).stream().sorted().collect(Collectors.joining(", "));
-            System.out.println(cocktail.getGlass() + "-" + cocktail.getAlcoholStrength() + "-[" + flavors + "]");
             session.insert(cocktail);
         }
     }
