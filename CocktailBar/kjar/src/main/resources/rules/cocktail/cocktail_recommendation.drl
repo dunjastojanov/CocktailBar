@@ -39,8 +39,8 @@ when
       collectSet($ingredient)
     )
 then
-  PreferableIngredientList preferableIngredientList = new PreferableIngredientList();
-  preferableIngredientList.setIngredients($set);
+  PreferableIngredientList preferableIngredientList = new PreferableIngredientList(new HashSet<>());
+  preferableIngredientList.setIngredients(new HashSet<Ingredient>($set));
 
   insert(preferableIngredientList);
   System.out.println("Accumulated ingredients.");
@@ -66,11 +66,14 @@ end
 rule "AddIngredientParents"
 salience(20)
 when
-    $p:PreferableIngredientList($ingredients: ingredients)
+    $p:PreferableIngredientList($ingredients: ingredients )
     $i1: Ingredient($id1: id)
     Ingredient($id2: id) from $ingredients
     isParentOf($id1, $id2;)
+    eval(!$p.containsIngredient($i1))
 then
+
+    System.out.println("Added parent ingredient: " +  $i1.getName() + ".");
     modify($p){
         addIngredient($i1)
     }
